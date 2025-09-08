@@ -1,42 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Airocean Map</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <script src="https://unpkg.com/topojson-client@3"></script>
-  <script src="https://unpkg.com/d3-geo-polygon@2"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airocean Map</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/topojson-client@3"></script>
+    <script src="https://unpkg.com/d3-geo-polygon@2"></script>
 </head>
-<body>
-  <div class="flex flex-col items-center accent-stone-500">
-    <div id="controls" class="flex flex-col w-full items-center gap-8 z-20">
-      <div class="flex flex-row justify-between">
-        <div class="flex flex-row gap-4 items-center">
-          <label class="flex flex-col items-center">
-            <input type="color" id="globeFillColor" value="#eeeeff" /> Oceans
-          </label>
-          <label class="flex flex-col items-center">
-            <input type="color" id="mapFillColor" value="#f5f5f4" /> Continents
-          </label>
-          <label class="flex flex-col items-center">
-            <input type="color" id="mapStrokeColor" value="#79716b" /> Coastline
-          </label>
+
+<body class="min-h-[100vh] flex justify-center items-center">
+    <div class="flex flex-col justify-center items-center accent-stone-500 gap-16">
+        <div id="controls" class="flex flex-col w-full items-center gap-8 z-20">
+            <div class="flex flex-row justify-between">
+                <div class="flex flex-row gap-4 items-center">
+                    <label class="flex flex-col items-center">
+                        <input type="color" id="globeFillColor" value="#eeeeff" /> Oceans
+                    </label>
+                    <label class="flex flex-col items-center">
+                        <input type="color" id="mapFillColor" value="#f5f5f4" /> Continents
+                    </label>
+                    <label class="flex flex-col items-center">
+                        <input type="color" id="mapStrokeColor" value="#79716b" /> Coastline
+                    </label>
+                </div>
+
+
+
+            </div>
+
+            <div class="flex flex-row gap-4 items-center">
+                <label class="flex flex-col items-center">
+                    <input type="file" id="topojsonUpload" accept=".json,.topojson" />
+                    Upload TopoJSON
+                </label>
+                <div id="loadingStatus" class="flex flex-col gap-2 w-full"></div>
+                <button id="resetMap" class="px-4 py-2 bg-stone-500 hover:bg-stone-600 text-white rounded hidden">Reset
+                    Map</button>
+            </div>
+
+            <div class="flex flex-row gap-24">
+                <label><input type="checkbox" id="showGlobe" checked /> Globe</label>
+                <label><input type="checkbox" id="showLand" checked /> Land</label>
+                <label><input type="checkbox" id="showGraticule" checked /> Graticule</label>
+                <label><input type="checkbox" id="showFolds" checked /> Folds</label>
+                <label><input type="checkbox" id="showIDs" /> IDs</label>
+            </div>
         </div>
-        <button id="downloadSVG" class="px-4 py-2 bg-stone-500 hover:bg-stone-600 text-white rounded">Download SVG</button>
-      </div>
-      <div class="flex flex-row gap-24">
-        <label><input type="checkbox" id="showGlobe" checked /> Globe</label>
-        <label><input type="checkbox" id="showLand" checked /> Land</label>
-        <label><input type="checkbox" id="showGraticule" checked /> Graticule</label>
-        <label><input type="checkbox" id="showFolds" checked /> Folds</label>
-        <label><input type="checkbox" id="showIDs" /> IDs</label>
-      </div>
+        <div id="d3Container"
+            class="bg-stone-50 z-10 relative w-full max-w-full overflow-auto flex justify-center items-center"></div>
+
+        <div>
+            <button id="downloadSVG" class="px-4 py-2 bg-stone-500 hover:bg-stone-600 text-white rounded">Download
+                SVG</button>
+            <button id="downloadPNG" class="px-4 py-2 bg-stone-500 hover:bg-stone-600 text-white rounded">Download
+                PNG</button>
+        </div>
+
     </div>
-    <div id="d3Container" class="bg-stone-50 z-10 relative w-full max-w-full overflow-auto flex justify-center items-center"></div>
-  </div>
-  <script src="script.js"></script>
+
+
+
+    <script src="script.js"></script>
 </body>
+
 </html>

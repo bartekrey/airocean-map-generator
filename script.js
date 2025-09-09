@@ -7,14 +7,23 @@ document.addEventListener('DOMContentLoaded', function () {
     let showGlobe = true;
     let showIDs = false;
     let showUploaded = true;
+
+    let uploadedTopoJSONData = null;
+
     let globeFillColor = '#eeeeff';
     let mapFillColor = '#f5f5f4';
     let mapStrokeColor = '#79716b';
+
+    let uploadedFillColor = '#ff0000';
+    let uploadedStrokeColor = '#ff0000';
+
 
     // Get DOM elements for controls
     const globeFillColorInput = document.getElementById('globeFillColor');
     const mapFillColorInput = document.getElementById('mapFillColor');
     const mapStrokeColorInput = document.getElementById('mapStrokeColor');
+    const uploadedFillColorInput = document.getElementById('uploadedFillColor');
+    const uploadedStrokeColorInput = document.getElementById('uploadedStrokeColor');
     const showGlobeInput = document.getElementById('showGlobe');
     const showLandInput = document.getElementById('showLand');
     const showGraticuleInput = document.getElementById('showGraticule');
@@ -38,6 +47,22 @@ document.addEventListener('DOMContentLoaded', function () {
         mapStrokeColor = e.target.value;
         toggleRendering();
     });
+
+    uploadedFillColorInput.addEventListener('input', (e) => {
+        uploadedFillColor = e.target.value;
+        if (showUploaded && uploadedTopoJSONData) {
+            renderUploadedTopoJSON(uploadedTopoJSONData);
+        }
+    });
+
+    uploadedStrokeColorInput.addEventListener('input', (e) => {
+        uploadedStrokeColor = e.target.value;
+        if (showUploaded && uploadedTopoJSONData) {
+            renderUploadedTopoJSON(uploadedTopoJSONData);
+        }
+    });
+
+
     showGlobeInput.addEventListener('change', (e) => {
         showGlobe = e.target.checked;
         toggleRendering();
@@ -72,16 +97,16 @@ document.addEventListener('DOMContentLoaded', function () {
         renderIDs();
 
         const uploadedFile = topojsonUploadInput.files[0];
-    if (uploadedFile && showUploaded) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const uploadedData = JSON.parse(e.target.result);
-            renderUploadedTopoJSON(uploadedData);
-        };
-        reader.readAsText(uploadedFile);
-    } else {
-        svg.selectAll(".user-uploaded").remove();
-    }
+        if (uploadedFile && showUploaded) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const uploadedData = JSON.parse(e.target.result);
+                renderUploadedTopoJSON(uploadedData);
+            };
+            reader.readAsText(uploadedFile);
+        } else {
+            svg.selectAll(".user-uploaded").remove();
+        }
     }
 
 
@@ -210,6 +235,12 @@ document.addEventListener('DOMContentLoaded', function () {
         renderGraticule();
         renderFolds();
         renderIDs();
+
+        if (showUploaded && uploadedTopoJSONData) {
+            renderUploadedTopoJSON(uploadedTopoJSONData);
+        } else {
+            svg.selectAll(".user-uploaded").remove();
+        }
     }
 
     function resizeSVG() {
@@ -311,8 +342,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const reader = new FileReader();
         reader.onload = function (e) {
             try {
-                const uploadedData = JSON.parse(e.target.result);
-                renderUploadedTopoJSON(uploadedData);
+                uploadedTopoJSONData = JSON.parse(e.target.result);
+                renderUploadedTopoJSON(uploadedTopoJSONData);
             } catch (error) {
                 console.error("Error parsing uploaded file:", error);
                 alert("Error parsing the uploaded file. Please ensure it is a valid TopoJSON file.");
@@ -322,22 +353,22 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderUploadedTopoJSON(uploadedData) {
-    svg.selectAll(".user-uploaded").remove();
+        svg.selectAll(".user-uploaded").remove();
 
-    // Iterate over all objects in the TopoJSON
-    for (const [key, object] of Object.entries(uploadedData.objects)) {
-        const feature = topojson.feature(uploadedData, object);
+        // Iterate over all objects in the TopoJSON
+        for (const [key, object] of Object.entries(uploadedData.objects)) {
+            const feature = topojson.feature(uploadedData, object);
 
-        // Render the feature based on its geometry type
-        svg.append("path")
-            .attr("class", "user-uploaded")
-            .datum(feature)
-            .attr("d", pathGenerator)
-            .attr("fill", "#ff000080") // Semi-transparent red fill for polygons
-            .attr("stroke", "#ff0000") // Red stroke for lines and polygon edges
-            .attr("stroke-width", 0.5);
+            // Render the feature based on its geometry type
+            svg.append("path")
+                .attr("class", "user-uploaded")
+                .datum(feature)
+                .attr("d", pathGenerator)
+                .attr("fill", uploadedFillColor + "80") // Semi-transparent red fill for polygons
+                .attr("stroke", uploadedStrokeColor) // Red stroke for lines and polygon edges
+                .attr("stroke-width", 0.5);
+        }
     }
-}
 
     window.addEventListener("resize", resizeSVG);
 });

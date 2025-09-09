@@ -7,56 +7,14 @@ document.addEventListener('DOMContentLoaded', function () {
     let showGlobe = true;
     let showIDs = false;
 
-    const defaultFeatureStyles = {
-        Point: {
-            r: 2,
-            fill: '#ff0000',
-            stroke: '#000000',
-            strokeWidth: 0.5
-        },
-        MultiPoint: {
-            r: 2,
-            fill: '#ff0000',
-            stroke: '#000000',
-            strokeWidth: 0.5
-        },
-        LineString: {
-            stroke: '#0000ff',
-            strokeWidth: 1,
-            fill: 'none'
-        },
-        MultiLineString: {
-            stroke: '#0000ff',
-            strokeWidth: 1,
-            fill: 'none'
-        },
-        Polygon: {
-            fill: '#00ff00',
-            stroke: '#000000',
-            strokeWidth: 0.5,
-            fillOpacity: 0.7
-        },
-        MultiPolygon: {
-            fill: '#00ff00',
-            stroke: '#000000',
-            strokeWidth: 0.5,
-            fillOpacity: 0.7
-        },
-        default: {
-            fill: '#808080',
-            stroke: '#000000',
-            strokeWidth: 0.5
-        }
-    };
-
     let globeFillColor = '#eeeeff';
     let mapFillColor = '#f5f5f4';
     let mapStrokeColor = '#79716b';
 
     let uploadedTopoJSONData = null;
 
-    let uploadedFillColor = '#00eeffff';
-    let uploadedStrokeColor = '#007780ff';
+    let uploadedFillColor = '#ffddeeff';
+    let uploadedStrokeColor = '#664400ff';
     let showUploaded = true;
 
 

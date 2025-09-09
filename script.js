@@ -7,6 +7,47 @@ document.addEventListener('DOMContentLoaded', function () {
     let showGlobe = true;
     let showIDs = false;
 
+    const defaultFeatureStyles = {
+        Point: {
+            r: 2,
+            fill: '#ff0000',
+            stroke: '#000000',
+            strokeWidth: 0.5
+        },
+        MultiPoint: {
+            r: 2,
+            fill: '#ff0000',
+            stroke: '#000000',
+            strokeWidth: 0.5
+        },
+        LineString: {
+            stroke: '#0000ff',
+            strokeWidth: 1,
+            fill: 'none'
+        },
+        MultiLineString: {
+            stroke: '#0000ff',
+            strokeWidth: 1,
+            fill: 'none'
+        },
+        Polygon: {
+            fill: '#00ff00',
+            stroke: '#000000',
+            strokeWidth: 0.5,
+            fillOpacity: 0.7
+        },
+        MultiPolygon: {
+            fill: '#00ff00',
+            stroke: '#000000',
+            strokeWidth: 0.5,
+            fillOpacity: 0.7
+        },
+        default: {
+            fill: '#808080',
+            stroke: '#000000',
+            strokeWidth: 0.5
+        }
+    };
 
     let globeFillColor = '#eeeeff';
     let mapFillColor = '#f5f5f4';
@@ -369,17 +410,62 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function renderUploadedTopoJSON(uploadedData) {
         svg.selectAll(".user-uploaded").remove();
-        // First pass: render all geographic features
-        for (const [key, object] of Object.entries(uploadedData.objects)) {
-            const feature = topojson.feature(uploadedData, object);
+        pathGenerator.pointRadius(1);
 
-            svg.append("path")
-                .attr("class", "user-uploaded")
-                .datum(feature)
-                .attr("d", pathGenerator)
-                .attr("fill", uploadedFillColor + "80")
-                .attr("stroke", uploadedStrokeColor)
-                .attr("stroke-width", 0.5);
+        for (const [key, object] of Object.entries(uploadedData.objects)) {
+            try {
+                const feature = topojson.feature(uploadedData, object);
+
+                // Debug output to understand our data structure
+                console.log(`Processing object: ${key}, Type: ${feature.type}`);
+
+                // Handle FeatureCollection
+                if (feature.type === "FeatureCollection") {
+                    console.log(`Found FeatureCollection with ${feature.features.length} features`);
+
+                    feature.features.forEach((subFeature, index) => {
+                        try {
+                            if (!subFeature.geometry) {
+                                console.warn(`Feature at index ${index} has null geometry`, subFeature);
+                                return;
+                            }
+                            const isLine = subFeature.geometry.type === "LineString" || subFeature.geometry.type === "MultiLineString";
+                            svg.append("path")
+                                .attr("class", "user-uploaded")
+                                .datum(subFeature)
+                                .attr("d", pathGenerator)
+                                .attr("fill", isLine ? "none" : (uploadedFillColor + "80"))
+                                .attr("stroke", uploadedStrokeColor)
+                                .attr("stroke-width", 0.5);
+
+                        } catch (e) {
+                            console.error(`Error processing feature at index ${index}:`, e);
+                            console.log("Problematic feature:", subFeature);
+                        }
+                    });
+                }
+                // Handle single Feature
+                else if (feature.type === "Feature") {
+                    if (!feature.geometry) {
+                        console.warn("Feature has null geometry", feature);
+                        continue;
+                    }
+                    const isLine = subFeature.geometry.type === "LineString" || subFeature.geometry.type === "MultiLineString";
+                    svg.append("path")
+                        .attr("class", "user-uploaded")
+                        .datum(feature)
+                        .attr("d", pathGenerator)
+                        .attr("fill", isLine ? "none" : (uploadedFillColor + "80"))
+                        .attr("stroke", uploadedStrokeColor)
+                        .attr("stroke-width", 0.5);
+
+                } else {
+                    console.log("Unknown feature type:", feature.type);
+                }
+            } catch (e) {
+                console.error(`Error processing object ${key}:`, e);
+                console.log("Problematic feature:", feature);
+            }
         }
     }
 

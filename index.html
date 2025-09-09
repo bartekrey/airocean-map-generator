@@ -26,10 +26,10 @@
                     <label class="flex flex-col items-center">
                         <input type="color" id="mapStrokeColor" value="#79716b" /> Coastline
                     </label>
-                    <label class="flex flex-col items-center hidden">
+                    <label class="flex flex-col items-center hidden " id="uploadedFillColorContainer">
                         <input type="color" id="uploadedFillColor" value="#ff0000" /> Uploaded Fill
                     </label>
-                    <label class="flex flex-col items-center hidden">
+                    <label class="flex flex-col items-center hidden" id="uploadedStrokeColorContainer">
                         <input type="color" id="uploadedStrokeColor" value="#ff0000" /> Uploaded Stroke
                     </label>
                 </div>
@@ -49,7 +49,10 @@
                 <label><input type="checkbox" id="showGraticule" checked /> Graticule</label>
                 <label><input type="checkbox" id="showFolds" checked /> Folds</label>
                 <label><input type="checkbox" id="showIDs" /> IDs</label>
-                <label><input type="checkbox" id="showUploaded" checked /> Uploaded Data</label>
+
+                <label class="hidden" id="showUploadedContainer">
+                    <input type="checkbox" id="showUploaded" checked /> Uploaded Data
+                </label>
             </div>
         </div>
         <div id="d3Container"

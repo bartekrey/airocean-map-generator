@@ -6,33 +6,40 @@ document.addEventListener('DOMContentLoaded', function () {
     let showFolds = true;
     let showGlobe = true;
     let showIDs = false;
-    let showUploaded = true;
 
-    let uploadedTopoJSONData = null;
 
     let globeFillColor = '#eeeeff';
     let mapFillColor = '#f5f5f4';
     let mapStrokeColor = '#79716b';
 
-    let uploadedFillColor = '#ff0000';
-    let uploadedStrokeColor = '#ff0000';
+    let uploadedTopoJSONData = null;
+
+    let uploadedFillColor = '#00eeffff';
+    let uploadedStrokeColor = '#007780ff';
+    let showUploaded = true;
 
 
     // Get DOM elements for controls
     const globeFillColorInput = document.getElementById('globeFillColor');
     const mapFillColorInput = document.getElementById('mapFillColor');
     const mapStrokeColorInput = document.getElementById('mapStrokeColor');
+
+    const topojsonUploadInput = document.getElementById('topojsonUpload');
+
+    const showUploadedInput = document.getElementById('showUploaded');
+    const showUploadedContainer = document.getElementById('showUploadedContainer');
+
     const uploadedFillColorInput = document.getElementById('uploadedFillColor');
     const uploadedStrokeColorInput = document.getElementById('uploadedStrokeColor');
+
     const showGlobeInput = document.getElementById('showGlobe');
     const showLandInput = document.getElementById('showLand');
     const showGraticuleInput = document.getElementById('showGraticule');
     const showFoldsInput = document.getElementById('showFolds');
     const showIDsInput = document.getElementById('showIDs');
-    const showUploadedInput = document.getElementById('showUploaded');
+
     const downloadSVGButton = document.getElementById('downloadSVG');
     const downloadPNGButton = document.getElementById('downloadPNG');
-    const topojsonUploadInput = document.getElementById('topojsonUpload');
 
     // Set up event listeners for controls
     globeFillColorInput.addEventListener('input', (e) => {
@@ -61,6 +68,13 @@ document.addEventListener('DOMContentLoaded', function () {
             renderUploadedTopoJSON(uploadedTopoJSONData);
         }
     });
+
+    // Function to show the uploaded data controls
+    function showUploadedDataControls() {
+        uploadedFillColorContainer.classList.remove('hidden');
+        uploadedStrokeColorContainer.classList.remove('hidden');
+        showUploadedContainer.classList.remove('hidden');
+    }
 
 
     showGlobeInput.addEventListener('change', (e) => {
@@ -343,6 +357,7 @@ document.addEventListener('DOMContentLoaded', function () {
         reader.onload = function (e) {
             try {
                 uploadedTopoJSONData = JSON.parse(e.target.result);
+                showUploadedDataControls();
                 renderUploadedTopoJSON(uploadedTopoJSONData);
             } catch (error) {
                 console.error("Error parsing uploaded file:", error);
@@ -354,21 +369,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function renderUploadedTopoJSON(uploadedData) {
         svg.selectAll(".user-uploaded").remove();
-
-        // Iterate over all objects in the TopoJSON
+        // First pass: render all geographic features
         for (const [key, object] of Object.entries(uploadedData.objects)) {
             const feature = topojson.feature(uploadedData, object);
 
-            // Render the feature based on its geometry type
             svg.append("path")
                 .attr("class", "user-uploaded")
                 .datum(feature)
                 .attr("d", pathGenerator)
-                .attr("fill", uploadedFillColor + "80") // Semi-transparent red fill for polygons
-                .attr("stroke", uploadedStrokeColor) // Red stroke for lines and polygon edges
+                .attr("fill", uploadedFillColor + "80")
+                .attr("stroke", uploadedStrokeColor)
                 .attr("stroke-width", 0.5);
         }
     }
+
 
     window.addEventListener("resize", resizeSVG);
 });

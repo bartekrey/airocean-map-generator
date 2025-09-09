@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let showFolds = true;
     let showGlobe = true;
     let showIDs = false;
+    let showUploaded = true;
     let globeFillColor = '#eeeeff';
     let mapFillColor = '#f5f5f4';
     let mapStrokeColor = '#79716b';
@@ -19,12 +20,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const showGraticuleInput = document.getElementById('showGraticule');
     const showFoldsInput = document.getElementById('showFolds');
     const showIDsInput = document.getElementById('showIDs');
+    const showUploadedInput = document.getElementById('showUploaded');
     const downloadSVGButton = document.getElementById('downloadSVG');
     const downloadPNGButton = document.getElementById('downloadPNG');
     const topojsonUploadInput = document.getElementById('topojsonUpload');
-    const loadingStatusDiv = document.getElementById('loadingStatus');
-    const resetMapButton = document.getElementById('resetMap');
-
 
     // Set up event listeners for controls
     globeFillColorInput.addEventListener('input', (e) => {
@@ -59,6 +58,34 @@ document.addEventListener('DOMContentLoaded', function () {
         showIDs = e.target.checked;
         toggleRendering();
     });
+
+    showUploadedInput.addEventListener('change', (e) => {
+        showUploaded = e.target.checked;
+        toggleRendering();
+    });
+
+    function toggleRendering() {
+        renderGlobe();
+        renderMap();
+        renderGraticule();
+        renderFolds();
+        renderIDs();
+
+        const uploadedFile = topojsonUploadInput.files[0];
+    if (uploadedFile && showUploaded) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const uploadedData = JSON.parse(e.target.result);
+            renderUploadedTopoJSON(uploadedData);
+        };
+        reader.readAsText(uploadedFile);
+    } else {
+        svg.selectAll(".user-uploaded").remove();
+    }
+    }
+
+
+    topojsonUploadInput.addEventListener('change', handleTopoJSONUpload);
     downloadSVGButton.addEventListener('click', downloadSVG);
     downloadPNGButton.addEventListener('click', downloadPNG);
 
@@ -112,47 +139,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function renderMap() {
         svg.selectAll(".land").remove();
-        svg.selectAll(".points").remove();
-        svg.selectAll(".lines").remove();
-        svg.selectAll(".polygons").remove();
         if (showLand && geojsonData) {
-            console.log("Rendering objects:", Object.keys(geojsonData.objects));
-            for (const [key, value] of Object.entries(geojsonData.objects)) {
-                try {
-                    let feature = topojson.feature(geojsonData, value);
-                    console.log(`Rendering object ${key} (type: ${feature.geometry.type})`);
-                    let pathData = pathGenerator(feature);
-                    console.log(`Path data for ${key}:`, pathData);
-                    if (!pathData) {
-                        console.warn(`No path data for ${key}`);
-                        continue;
-                    }
-                    let className = "polygons";
-                    let fill = mapFillColor;
-                    let stroke = mapStrokeColor;
-                    let strokeWidth = 1;
-                    if (feature.geometry.type === "Point" || feature.geometry.type === "MultiPoint") {
-                        className = "points";
-                        fill = "red";
-                        stroke = "darkred";
-                        strokeWidth = 2;
-                    } else if (feature.geometry.type === "LineString" || feature.geometry.type === "MultiLineString") {
-                        className = "lines";
-                        fill = "none";
-                        stroke = "blue";
-                        strokeWidth = 1.5;
-                    }
-                    svg.append("path")
-                        .attr("class", className)
-                        .datum(feature)
-                        .attr("d", pathData)
-                        .attr("fill", fill)
-                        .attr("stroke", stroke)
-                        .attr("stroke-width", strokeWidth);
-                } catch (error) {
-                    console.error(`Error rendering object ${key}:`, error);
-                }
-            }
+            let landFeature = topojson.feature(geojsonData, geojsonData.objects.land);
+            svg.append("path")
+                .attr("class", "land")
+                .datum(landFeature)
+                .attr("d", pathGenerator)
+                .attr("fill", mapFillColor)
+                .attr("stroke", mapStrokeColor)
+                .attr("stroke-width", 1);
         }
     }
 
@@ -308,54 +303,41 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(error => console.error("Error loading or rendering the map data: ", error));
 
-    topojsonUploadInput.addEventListener('change', function (e) {
-        const file = e.target.files[0];
-        if (!file) return;
 
-        // Show loading status
-        const statusParagraph = document.createElement('p');
-        statusParagraph.id = 'status-' + Date.now();
-        statusParagraph.innerHTML = `Loading: ${file.name} <span id="status-icon-${statusParagraph.id}"></span>`;
-        loadingStatusDiv.appendChild(statusParagraph);
+    function handleTopoJSONUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
 
         const reader = new FileReader();
         reader.onload = function (e) {
             try {
-                const data = JSON.parse(e.target.result);
-                console.log("Uploaded TopoJSON structure:", data);
-                console.log("Objects in TopoJSON:", Object.keys(data.objects));
-                geojsonData = data;
-                processFace(projectionAirocean.tree());
-                resizeSVG();
-                toggleRendering();
-                const statusIcon = document.getElementById(`status-icon-${statusParagraph.id}`);
-                statusIcon.textContent = ' ✓';
-                resetMapButton.classList.remove('hidden');
+                const uploadedData = JSON.parse(e.target.result);
+                renderUploadedTopoJSON(uploadedData);
             } catch (error) {
-                alert("Error parsing TopoJSON file: " + error.message);
+                console.error("Error parsing uploaded file:", error);
+                alert("Error parsing the uploaded file. Please ensure it is a valid TopoJSON file.");
             }
         };
         reader.readAsText(file);
-    });
+    }
 
-    // Add event listener for reset button
-    resetMapButton.addEventListener('click', function () {
-        d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json")
-            .then(function (data) {
-                geojsonData = data;
-                processFace(projectionAirocean.tree());
-                resizeSVG();
-                toggleRendering();
+    function renderUploadedTopoJSON(uploadedData) {
+    svg.selectAll(".user-uploaded").remove();
 
-                // Clear loading status
-                loadingStatusDiv.innerHTML = '';
+    // Iterate over all objects in the TopoJSON
+    for (const [key, object] of Object.entries(uploadedData.objects)) {
+        const feature = topojson.feature(uploadedData, object);
 
-                // Hide reset button
-                resetMapButton.classList.add('hidden');
-            })
-            .catch(error => console.error("Error loading default map data: ", error));
-    });
-
+        // Render the feature based on its geometry type
+        svg.append("path")
+            .attr("class", "user-uploaded")
+            .datum(feature)
+            .attr("d", pathGenerator)
+            .attr("fill", "#ff000080") // Semi-transparent red fill for polygons
+            .attr("stroke", "#ff0000") // Red stroke for lines and polygon edges
+            .attr("stroke-width", 0.5);
+    }
+}
 
     window.addEventListener("resize", resizeSVG);
 });

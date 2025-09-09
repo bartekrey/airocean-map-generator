@@ -12,7 +12,7 @@
     <script src="https://unpkg.com/d3-geo-polygon@2"></script>
 </head>
 
-<body class="min-h-[100vh] flex justify-center items-center">
+<body class="min-h-[100vh] flex justify-center items-center p-4">
     <div class="flex flex-col justify-center items-center accent-stone-500 gap-16">
         <div id="controls" class="flex flex-col w-full items-center gap-8 z-20">
             <div class="flex flex-row justify-between">
@@ -27,33 +27,29 @@
                         <input type="color" id="mapStrokeColor" value="#79716b" /> Coastline
                     </label>
                 </div>
-
-
-
             </div>
 
-            <div class="flex flex-row gap-4 items-center">
-                <label class="flex flex-col items-center">
-                    <input type="file" id="topojsonUpload" accept=".json,.topojson" />
+            <div class="flex flex-col gap-4 items-center">
+
+                <label class="flex flex-col items-start">
                     Upload TopoJSON
+                    <input type="file" id="topojsonUpload" accept=".json,.topojson" />
                 </label>
-                <div id="loadingStatus" class="flex flex-col gap-2 w-full"></div>
-                <button id="resetMap" class="px-4 py-2 bg-stone-500 hover:bg-stone-600 text-white rounded hidden">Reset
-                    Map</button>
             </div>
 
-            <div class="flex flex-row gap-24">
+            <div class="flex flex-row gap-8">
                 <label><input type="checkbox" id="showGlobe" checked /> Globe</label>
                 <label><input type="checkbox" id="showLand" checked /> Land</label>
                 <label><input type="checkbox" id="showGraticule" checked /> Graticule</label>
                 <label><input type="checkbox" id="showFolds" checked /> Folds</label>
                 <label><input type="checkbox" id="showIDs" /> IDs</label>
+                <label><input type="checkbox" id="showUploaded" checked /> Uploaded Data</label>
             </div>
         </div>
         <div id="d3Container"
             class="bg-stone-50 z-10 relative w-full max-w-full overflow-auto flex justify-center items-center"></div>
 
-        <div>
+        <div class="flex flex-row gap-8">
             <button id="downloadSVG" class="px-4 py-2 bg-stone-500 hover:bg-stone-600 text-white rounded">Download
                 SVG</button>
             <button id="downloadPNG" class="px-4 py-2 bg-stone-500 hover:bg-stone-600 text-white rounded">Download
